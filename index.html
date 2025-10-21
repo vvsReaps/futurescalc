@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Futures Risk Calculator by Reaps</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    *{box-sizing:border-box}
+    :root{
+      --bg1:#0f172a; --bg2:#1e293b; --panel:#0f172a; --panelLine:#334155;
+      --field:#1e293b; --focus:#38bdf8; --text:#f8fafc; --muted:#94a3b8; --accent:#38bdf8;
+    }
+    body{
+      margin:0; font-family:'Inter',sans-serif;
+      background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      color:var(--text); min-height:100vh;
+      display:flex; flex-direction:column; align-items:center;
+    }
+    header{ text-align:center; padding:2rem 1rem; color:#f1f5f9; }
+    header h1{font-size:2rem; margin-bottom:.25rem;font-weight:700;}
+    header p{color:var(--muted); margin:0;}
+    main{
+      width:95%; max-width:1000px; background:var(--bg2); border-radius:16px;
+      box-shadow:0 4px 20px rgba(0,0,0,.4); padding:1.75rem 2rem; margin-bottom:2rem;
+      display:grid; gap:1.5rem;
+    }
+    section.card{
+      background:var(--panel); border-radius:12px; padding:1.25rem 1.5rem;
+      box-shadow:inset 0 0 0 1px var(--panelLine);
+      overflow:visible;
+    }
+    h2{margin-top:0; color:var(--text); font-size:1.25rem; border-bottom:1px solid var(--panelLine); padding-bottom:0.5rem;}
+    label{font-weight:600;color:#e2e8f0;}
+    input,select{
+      width:100%; height:46px; padding:10px 12px; border-radius:10px; border:1px solid #475569;
+      background:var(--field); color:var(--text); font-size:1rem; outline:none;
+      transition:border-color .15s ease, box-shadow .15s ease;
+      font-variant-numeric: tabular-nums;
+    }
+    input[type="number"]{ -moz-appearance:textfield; }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+    input:focus,select:focus{border-color:var(--focus); box-shadow:0 0 0 3px rgba(56,189,248,.25);}
+    .grid{display:grid;gap:16px;grid-template-columns:200px 1fr;align-items:center;}
+    @media (max-width:760px){ .grid{ grid-template-columns: 1fr; } label{text-align:left;} }
+    .result{ font-size:2.6rem;font-weight:800;color:var(--accent);margin-top:0.25rem; }
+    .btn{border:none;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer;font-size:1rem;transition:background .2s ease,transform .1s;}
+    .btn.neutral{background:#111827;color:#e2e8f0;border:1px solid #475569;}
+    .btn.neutral:hover{background:#0b1220;}
+    .btn:active{transform:scale(0.98);}
+    table{width:100%;border-collapse:collapse;margin-top:1rem;font-size:.95rem;}
+    th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--panelLine);white-space:nowrap;}
+    th:first-child,td:first-child{text-align:left;}
+    thead{background:var(--bg2);color:#e2e8f0;}
+    tbody tr:nth-child(odd){background:#111827;}
+    .footer{color:var(--muted);font-size:.8rem;text-align:center;padding-bottom:3rem;}
+    .flex{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:1rem;}
+    .pill{display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 12px;border-radius:10px;border:1px solid #475569;background:var(--field);}
+    .discord-btn{
+      display:inline-block;
+      background-color:#5865F2;
+      color:#fff;
+      font-weight:700;
+      padding:10px 18px;
+      border-radius:8px;
+      text-decoration:none;
+      transition:background .2s ease, transform .1s ease;
+    }
+    .discord-btn:hover{background-color:#4752C4;}
+    .discord-btn:active{transform:scale(0.97);}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Futures Risk Calculator</h1>
+    <p>@vvsReaps | Profit Hub</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Inputs</h2>
+      <div class="grid">
+        <label for="points">Stop Loss Points</label>
+        <input id="points" type="number" inputmode="decimal" min="0.25" step="0.25" value="1" onfocus="this.select()" />
+        <label for="contracts">Contracts</label>
+        <input id="contracts" type="number" inputmode="numeric" min="1" max="10" value="1" onfocus="this.select()" />
+        <label for="product">Product</label>
+        <select id="product"></select>
+        <span>Value / Point</span><div id="valuePerPoint" class="pill">$0.00</div>
+      </div>
+      <div class="flex">
+        <button class="btn neutral" id="reset">Reset</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Risk</h2>
+      <p>Risk = Points × Contracts × $/Point</p>
+      <div id="riskTotal" class="result">$0.00</div>
+    </section>
+
+    <section class="card">
+      <h2>Risk Matrix</h2>
+      <table id="matrix">
+        <thead><tr><th>Product</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <div class="footer">
+    <a href="https://discord.gg/nv55Z4nNrX" class="discord-btn" target="_blank">Join the Discord</a>
+  </div>
+
+  <script>
+    const PRODUCTS = [
+      { sym: "NQ",  perPoint: 20 },
+      { sym: "MNQ", perPoint: 2 },
+      { sym: "ES",  perPoint: 50 },
+      { sym: "MES", perPoint: 5 },
+      { sym: "YM",  perPoint: 5 },
+      { sym: "MYM", perPoint: 0.5 },
+      { sym: "GC",  perPoint: 100 },
+      { sym: "MGC", perPoint: 10 },
+    ];
+    const USD = new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:2});
+    const el = {
+      product: document.getElementById("product"),
+      points: document.getElementById("points"),
+      contracts: document.getElementById("contracts"),
+      valuePerPoint: document.getElementById("valuePerPoint"),
+      riskTotal: document.getElementById("riskTotal"),
+      reset: document.getElementById("reset"),
+      matrixBody: document.querySelector("#matrix tbody")
+    };
+    function populateProducts(){
+      PRODUCTS.forEach(p=>{const o=document.createElement("option");o.value=p.sym;o.textContent=p.sym;el.product.appendChild(o)});
+      el.product.value="ES"; updateValuePerPoint();
+    }
+    function getSelected(){
+      const sym=el.product.value;
+      const prod=PRODUCTS.find(p=>p.sym===sym)||PRODUCTS[0];
+      const points=Math.max(0,parseFloat(el.points.value)||0);
+      const contracts=Math.min(10,Math.max(1,parseInt(el.contracts.value||"1",10)));
+      return {prod,points,contracts};
+    }
+    function updateValuePerPoint(){
+      const {prod}=getSelected();
+      el.valuePerPoint.textContent=USD.format(prod.perPoint).replace(".00","");
+    }
+    function computeRisk(points,contracts,perPoint){return points*contracts*perPoint;}
+    function renderRisk(){
+      const {prod,points,contracts}=getSelected();
+      el.riskTotal.textContent=USD.format(computeRisk(points,contracts,prod.perPoint));
+    }
+    function renderMatrix(){
+      const points=Math.max(0,parseFloat(el.points.value)||0);
+      el.matrixBody.innerHTML="";
+      PRODUCTS.forEach(p=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML="<td>"+p.sym+"</td>"+Array.from({length:10},(_,i)=>"<td>"+USD.format(points*(i+1)*p.perPoint)+"</td>").join("");
+        el.matrixBody.appendChild(tr);
+      });
+    }
+    function resetForm(){
+      el.points.value="1"; el.contracts.value="1"; el.product.value="ES";
+      updateValuePerPoint(); renderRisk(); renderMatrix();
+    }
+    el.points.addEventListener("input",()=>{ updateValuePerPoint(); renderRisk(); renderMatrix(); });
+    el.contracts.addEventListener("input",()=>{ renderRisk(); });
+    el.product.addEventListener("change",()=>{ updateValuePerPoint(); renderRisk(); });
+    el.reset.addEventListener("click",resetForm);
+    populateProducts(); renderRisk(); renderMatrix();
+  </script>
+</body>
+</html>
